@@ -1,3 +1,3 @@
-pymysql==1.0.3
+mysqlclient
 sqlalchemy==2.0.23
 plotly==5.15.0
