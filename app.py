@@ -4,6 +4,7 @@ import streamlit as st
 from sqls.chat_per_date import chat_per_date_sql
 from sqls.dau_sql import dau_sql
 from sqls.ru_sql import ru_sql
+from sqls.chat_count_by_user import chat_count_by_user_sql
 
 st.set_page_config(layout="wide")
 conn = st.connection("mysql", type="sql")
@@ -11,17 +12,21 @@ conn = st.connection("mysql", type="sql")
 
 @st.cache_resource
 def get_ru_data():
-    return conn.query(sql=ru_sql)
+    return conn.query(sql=ru_sql, ttl=0)
 
 
 @st.cache_resource
 def get_dau_data():
-    return conn.query(sql=dau_sql)
+    return conn.query(sql=dau_sql, ttl=0)
 
 
 @st.cache_resource
-def get_chat_per_date():
-    return conn.query(sql=chat_per_date_sql)
+def get_chat_per_data():
+    return conn.query(sql=chat_per_date_sql, ttl=0)
+
+@st.cache_resource
+def get_chat_count_by_user():
+    return conn.query(sql=chat_count_by_user_sql, ttl=0)
 
 
 st.title("펭추리 대쉬보드")
@@ -34,8 +39,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 ru_df = get_ru_data()
-chat_df = get_chat_per_date()
+chat_df = get_chat_per_data()
 dau_df = get_dau_data()
+chat_count_df = get_chat_count_by_user()
 
 cols = st.columns(6)
 with cols[0]:
@@ -53,16 +59,20 @@ col1, col2, col3 = st.columns(3)
 with col1:
     with st.expander("Daily RU"):
         st.write(ru_df)
+    st.subheader("신규 유저")
     ru_fig = px.line(ru_df, x='date', y="cnt", height=300)
     st.plotly_chart(ru_fig, use_container_width=True)
 with col2:
     with st.expander("DAU"):
         st.write(dau_df)
+
+    st.subheader("DAU")
     dau_fig = px.line(dau_df, x='date', y="cnt", height=300)
     st.plotly_chart(dau_fig, use_container_width=True)
 with col3:
     with st.expander("일별 채팅 수"):
         st.write(chat_df)
+
+    st.subheader("일별 채팅 수")
     chat_fig = px.line(chat_df, x='date', y="cnt", height=300, range_y=(0, max(chat_df["cnt"])))
     st.plotly_chart(chat_fig, use_container_width=True)
-

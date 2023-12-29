@@ -2,7 +2,7 @@ ru_sql = """
 WITH registered_date AS (
     SELECT
         user_id,
-        MIN(DATE(created_at)) as date
+        MIN(DATE(CONVERT_TZ(created_at, '+00:00', 'Asia/Seoul'))) as date
     FROM
         kakaotalk_chat
     WHERE
